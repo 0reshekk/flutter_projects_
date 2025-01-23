@@ -29,7 +29,7 @@ class TaskSelector extends StatelessWidget {
           title: Text('Задачи'),
           bottom: TabBar(
             tabs: [
-              // Tab(text: '№1.3 - Таблица умножения'),
+              // Tab(text: '№1.3 - Таблица умножения'), - без подсказки, просто вкладка
               Tooltip(message: '№1.3 - Таблица умножения', child: Tab(text: '№1.3')),
               Tooltip(message: '№1.6 - Простое число', child: Tab(text: '№1.6')),
               Tooltip(message: '№1.9 - Реверс строки', child: Tab(text: '№1.9')),
@@ -88,7 +88,7 @@ class MultiplicationTable extends StatelessWidget {
         int multiplier = index + 1;
         int result = multiplier * 5;
         return ListTile(
-          title: Text('5 x $multiplier = $result'),
+          title: Text('5 * $multiplier = $result'),
         );
       },
     );
@@ -120,7 +120,7 @@ class _PrimeNumberCheckState extends State<PrimeNumberCheck> {
       }
     }
     
-    setState(() => _result = isPrime ? '$number - простое число' : '$number - не простое число');
+    setState(() => _result = isPrime ? '$number - это простое число' : '$number - это не простое число');
   }
 
   @override
@@ -221,7 +221,7 @@ class _DigitSumState extends State<DigitSum> {
           child: Text('Посчитать сумму цифр'),
         ),
         SizedBox(height: 20),
-        Text('Сумма цифр числа $_sum'),
+        Text('Итоговая сумма цифр числа: $_sum'),
       ],
     );
   }
@@ -238,12 +238,44 @@ class _ArraySumState extends State<ArraySum> {
   final TextEditingController _elementsController = TextEditingController();
   
   int _totalSum = 0;
+  String _errorMessage = '';
 
   void _calculateArraySum() {
+    // Получаем размер массива из текстового поля
+    int? size = int.tryParse(_sizeController.text);
+    if (size == null || size <= 0) {
+      setState(() {
+        _errorMessage = 'Введите корректный размер массива.';
+        _totalSum = 0; // Сбрасываем сумму
+      });
+      return;
+    }
+
+    // Получаем элементы массива
     List<String> elements = _elementsController.text.split(',');
-    int sum = elements.map(int.parse).reduce((a, b) => a + b);
     
-    setState(() => _totalSum = sum);
+    // Проверяем, совпадает ли количество элементов с указанным размером
+    if (elements.length != size) {
+      setState(() {
+        _errorMessage = 'Количество элементов не совпадает с размером массива.';
+        _totalSum = 0; // Сбрасываем сумму
+      });
+      return;
+    }
+
+    // Пробуем преобразовать элементы в целые числа и вычислить сумму
+    try {
+      int sum = elements.map(int.parse).reduce((a, b) => a + b);
+      setState(() {
+        _totalSum = sum;
+        _errorMessage = ''; // Сбрасываем сообщение об ошибке
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Ошибка: убедитесь, что все элементы - целые числа.';
+        _totalSum = 0; // Сбрасываем сумму
+      });
+    }
   }
 
   @override
@@ -256,7 +288,7 @@ class _ArraySumState extends State<ArraySum> {
           child: TextField(
             controller: _sizeController,
             decoration:
-                InputDecoration(labelText: 'Введите размер массива (не используется)'),
+                InputDecoration(labelText: 'Введите размер массива'),
             keyboardType: TextInputType.number,
           ),
         ),
@@ -274,11 +306,17 @@ class _ArraySumState extends State<ArraySum> {
           child: Text('Посчитать сумму массива'),
         ),
         SizedBox(height: 20),
+        if (_errorMessage.isNotEmpty)
+          Text(
+            _errorMessage,
+            style: TextStyle(color: Colors.red),
+          ),
         Text('Сумма элементов массива $_totalSum'),
       ],
     );
   }
 }
+
 
 // 1.18 : Подсчет гласных и согласных в строке
 class VowelConsonantCount extends StatefulWidget {
@@ -936,69 +974,3 @@ class Product {
 
   Product({required this.name, required this.price});
 }
-
-
-// import 'package:flutter/material.dart';
-// void main() {
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Таблица умножения',
-//       theme: ThemeData(
-//         // This is the theme of your application.
-//          primarySwatch: Colors.blue,
-//       ),
-//       home: MultiplicationTables(), 
-//     );
-//   }
-// }
-
-// class MultiplicationTables extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return DefaultTabController(
-//       length: 2, // Количество вкладок
-//       child: Scaffold(
-//         appBar: AppBar(
-//           title: Text('Таблицы умножения'),
-//           bottom: TabBar(
-//             tabs: [
-//               Tab(text: 'на 5'),
-//               Tab(text: 'на 6'),
-//             ],
-//           ),
-//         ),
-//         body: TabBarView(
-//           children: [
-//             MultiplicationTable(number: 5), // Таблица на 5
-//             MultiplicationTable(number: 6), // Таблица на 6
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class MultiplicationTable extends StatelessWidget {
-//   final int number;
-
-//   MultiplicationTable({required this.number});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return ListView.builder(
-//       itemCount: 10,
-//       itemBuilder: (context, index) {
-//         int multiplier = index + 1; // Умножаем на числа от 1 до 10
-//         int result = multiplier * number; // Результат умножения
-//         return ListTile(
-//           title: Text('$number x $multiplier = $result'),
-//         );
-//       },
-//     );
-//   }
-// }
